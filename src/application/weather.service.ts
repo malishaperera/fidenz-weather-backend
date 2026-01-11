@@ -1,21 +1,20 @@
 import cities from "../cities.json";
 import { fetchWeatherByCityId } from "../external/openWeather.client";
 import { calculateComfortIndex } from "./comfortIndex.service";
-import {getCache} from "../cache/memory.cache";
-type WeatherResult = {
-    city: string;
-    temperature: number;
-    comfortIndex: number;
-};
+import {getCache,setCache} from "../cache/memory.cache";
 
 const CACHE_KEY = "WEATHER_WITH_COMFORT";
 
-export const getWeatherWithComfortIndex = async (): Promise<WeatherResult[]> => {
+export const getWeatherWithComfortIndex = async () => {
     const cached = getCache(CACHE_KEY);
     if (cached) {
+        console.log("CACHE HIT");
         return cached;
     }
-    const results: WeatherResult[] = [];
+
+    console.log("CACHE MISS");
+
+    const results: any[] = [];
 
     for (const city of cities.List) {
         const weather = await fetchWeatherByCityId(Number(city.CityCode));
@@ -30,8 +29,21 @@ export const getWeatherWithComfortIndex = async (): Promise<WeatherResult[]> => 
             city: weather.name,
             temperature: weather.main.temp,
             comfortIndex,
+            description: weather.weather[0].description,
         });
     }
 
-    return results;
+    //Sort by comfort index
+    results.sort((a, b) => b.comfortIndex - a.comfortIndex);
+
+    //Add ranking
+    const rankedResults = results.map((item, index) => ({
+        rank: index + 1,
+        ...item,
+    }));
+
+    //SAVE TO CACHE
+    setCache(CACHE_KEY, rankedResults);
+
+    return rankedResults;
 };

@@ -4,6 +4,7 @@ import { getCacheStatus } from "../cache/memory.cache";
 
 export const getWeatherData = async (req: Request, res: Response) => {
     try {
+        console.log("Fetching weather data with comfort index");
         const data = await getWeatherWithComfortIndex();
         res.json(data);
     } catch (error) {
