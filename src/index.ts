@@ -1,31 +1,16 @@
 import "dotenv/config";
 import express from "express";
-// import {connectDB} from "./infrastructure/db";
-
 import cors from "cors";
+import { getWeatherData } from "./api/weather.controller";
 
+const app = express();
 
-const server = express();
+app.use(cors());
+app.use(express.json());
 
-server.use(
-    cors({
-        origin: [
-            "http://localhost:5173",
-        ],
-        credentials: true,
-    })
-);
-
-// server.use(loggerMiddleware);
-
-server.use(express.json());
-
-// server.use("/api/weather", weatherRouter);
-
-// connectDB();
-
+app.get("/weather", getWeatherData);
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT,()=>{
+app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
-})
+});
